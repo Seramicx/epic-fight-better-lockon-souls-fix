@@ -2,7 +2,7 @@
 
 This is a companion mod for the [Better Lockon](https://github.com/ShelMarow/Better-Lockon) and [Epic Fight](https://github.com/Antikythera-Studios/epicfight) ecosystem in Minecraft Forge 1.20.1.
 
-![Mod Showcase](https://raw.githubusercontent.com/Seramicx/Epic-Fight-Better-Lockon-Souls-Fix/main/lockon_showcase_small.gif)
+![Mod Showcase](https://raw.githubusercontent.com/Seramicx/Epic-Fight-Better-Lockon-Souls-Fix/assets/lockon_showcase_small.gif)
 
 The original Better Lockon mod had several game-breaking movement bugs depending on what perspective you were playing in. If you were in 1st person, pressing S to walk backwards or A/D to strafe would actively force your character to walk forward straight into the enemy. In 3rd person, while basic movement worked, combat actions were completely broken. If you tried to use Epic Fight's dodge roll to escape, you could only roll directly towards the enemy you were locked onto. Rolling away or dodging sideways was impossible.
 
