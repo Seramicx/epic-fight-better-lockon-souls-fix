@@ -39,3 +39,16 @@ If you want to compile the project yourself instead:
 2. Run `gradlew build` in the root folder
 3. The compiled jar will show up in the `build/libs` directory
 </details>
+
+## License
+
+**Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)**
+
+You are free to:
+* **Share** - copy and redistribute the material in any medium or format
+* **Adapt** - remix, transform, and build upon the material
+
+Under the following terms:
+* **Attribution** - You must give appropriate credit.
+* **NonCommercial** - You may not use the material for commercial purposes (no monetized downloads or ad-focus links).
+* **ShareAlike** - If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
