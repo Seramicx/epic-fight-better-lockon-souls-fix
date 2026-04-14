@@ -12,8 +12,7 @@ Better Lockon's movement has quite a few issues out of the box. In 1st person, t
 - **Fixes the 1st person magnetism bug** where pressing back/sideways drags you into the enemy
 - **Smooth turning** instead of the rigid 8-direction snapping
 - **Stops camera drag** from Epic Fight constantly pulling your rotation toward the target
-- **Guard and parry compatibility** with Better Lock On's auto-facing during blocking
-- **Controller support** via [Controllable](https://github.com/MrCrayfish/Controllable) for full analog stick movement
+- **Controller support** via [Controllable](https://github.com/MrCrayfish/Controllable) for full analog stick movement (still needs testing)
 - **Extended lock-on range** (configurable) so you can actually lock onto flying bosses
 
 ## Config
