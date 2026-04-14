@@ -31,7 +31,7 @@ description='''${mod_description}'''
 
 [[dependencies.${mod_id}]]
     modId="betterlockon"
-    mandatory=true
+    mandatory=false
     versionRange="[1.0.0,)"
     ordering="AFTER"
     side="CLIENT"

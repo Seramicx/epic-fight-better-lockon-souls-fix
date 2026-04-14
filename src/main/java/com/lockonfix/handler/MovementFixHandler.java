@@ -15,7 +15,10 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
+import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
+import yesman.epicfight.world.capabilities.EpicFightCapabilities;
+import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 
 import java.lang.reflect.Field;
 
@@ -137,6 +140,65 @@ public class MovementFixHandler {
     }
 
     // =====================================================================
+    // Attack state detection via Epic Fight capabilities
+    // =====================================================================
+
+    /**
+     * Check if the player is in an attack animation where movement should be blocked.
+     * Uses Epic Fight's own EntityState flags:
+     * - attacking() = player is in an attack animation
+     * - movementLocked() = the animation explicitly locks movement
+     *
+     * We suppress our movement injection when BOTH attacking AND movementLocked.
+     * DashAttackAnimation (sprint attacks) does NOT lock movement, so they still work.
+     */
+    private static boolean isAttackingWithMovementLocked(LocalPlayer player) {
+        try {
+            LocalPlayerPatch patch = EpicFightCapabilities.getLocalPlayerPatch(player);
+            if (patch == null) return false;
+
+            EntityState state = patch.getEntityState();
+            if (state == null) return false;
+
+            // If Epic Fight says movement is locked (attack animations that
+            // should root the player), suppress our movement override.
+            // Sprint/dash attacks do NOT set movementLocked, so they keep momentum.
+            return state.movementLocked();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // =====================================================================
+    // Input reading — keyboard + controller fallback
+    // =====================================================================
+
+    /**
+     * Read directional input from keyboard keys first; if nothing pressed,
+     * fall back to the Input values already set (by Controllable or other mods).
+     */
+    private static float[] readDirectionalInput(Input input) {
+        // Try keyboard first
+        float rawForward = 0;
+        if (MC.options.keyUp.isDown()) rawForward += 1.0F;
+        if (MC.options.keyDown.isDown()) rawForward -= 1.0F;
+
+        float rawStrafe = 0;
+        if (MC.options.keyLeft.isDown()) rawStrafe += 1.0F;
+        if (MC.options.keyRight.isDown()) rawStrafe -= 1.0F;
+
+        // If no keyboard input, use values already written to Input by Controllable
+        // or any other input source. These are the pre-existing values from earlier
+        // event handlers (Controllable fires at default priority, we fire at LOW).
+        if (rawForward == 0 && rawStrafe == 0) {
+            rawForward = input.forwardImpulse;
+            rawStrafe = input.leftImpulse;
+        }
+
+        return new float[]{rawForward, rawStrafe};
+    }
+
+    // =====================================================================
     // PRIMARY: MovementInputUpdateEvent (after BetterLockOn)
     // Sets movement direction and yRot for the movement calculation
     // =====================================================================
@@ -167,14 +229,23 @@ public class MovementFixHandler {
             smoothedYRot = player.getYRot();
         }
 
-        // Read RAW key states (these are never modified by BetterLockOn)
-        float rawForward = 0;
-        if (MC.options.keyUp.isDown()) rawForward += 1.0F;
-        if (MC.options.keyDown.isDown()) rawForward -= 1.0F;
+        // If Epic Fight has locked movement for an attack animation, don't inject
+        // any movement. This prevents sliding while attacking.
+        // Sprint/dash attacks don't set movementLocked, so they keep their momentum.
+        if (isAttackingWithMovementLocked(player)) {
+            input.forwardImpulse = 0;
+            input.leftImpulse = 0;
+            input.up = false;
+            input.down = false;
+            input.left = false;
+            input.right = false;
+            return;
+        }
 
-        float rawStrafe = 0;
-        if (MC.options.keyLeft.isDown()) rawStrafe += 1.0F;
-        if (MC.options.keyRight.isDown()) rawStrafe -= 1.0F;
+        // Read input from keyboard OR controller
+        float[] dir = readDirectionalInput(input);
+        float rawForward = dir[0];
+        float rawStrafe = dir[1];
 
         float targetYaw = getYawToTarget(player, target);
         boolean isMoving = rawForward != 0 || rawStrafe != 0;
@@ -248,12 +319,15 @@ public class MovementFixHandler {
         if (target == null || !target.isAlive()) return;
 
         // Re-apply our tracked yRot AFTER Epic Fight's postClientTick
-        // has overwritten it. This is required because without this,
-        // Epic Fight drags yRot back toward the target at 30°/tick.
+        // has overwritten it. Also set yRotO/yBodyRotO/yHeadRotO to prevent
+        // interpolation jitter that causes the lock-on icon to flicker.
         if (!Float.isNaN(smoothedYRot)) {
             player.setYRot(smoothedYRot);
+            player.yRotO = smoothedYRot;
             player.yBodyRot = smoothedYRot;
+            player.yBodyRotO = smoothedYRot;
             player.yHeadRot = smoothedYRot;
+            player.yHeadRotO = smoothedYRot;
         }
     }
 }
