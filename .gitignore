@@ -22,3 +22,6 @@ crash-reports/
 # OS Files
 .DS_Store
 Thumbs.db
+
+# IDE / build output
+bin/

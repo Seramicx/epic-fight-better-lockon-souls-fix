@@ -20,6 +20,17 @@ public class FixConfig {
     // Lock-On Range
     public static final ForgeConfigSpec.IntValue LOCK_ON_RANGE;
 
+    // Auto Lock-On
+    public static final ForgeConfigSpec.BooleanValue FILTER_PLAYERS_FROM_AUTO_LOCKON;
+    public static final ForgeConfigSpec.DoubleValue FLICK_SENSITIVITY;
+
+    // Camera Offset (Over-the-Shoulder)
+    public static final ForgeConfigSpec.DoubleValue CAMERA_OFFSET_X;
+    public static final ForgeConfigSpec.DoubleValue CAMERA_OFFSET_Y;
+    public static final ForgeConfigSpec.DoubleValue CAMERA_OFFSET_SMOOTHING;
+    public static final ForgeConfigSpec.BooleanValue HIDE_PLAYER_WHEN_CLOSE;
+    public static final ForgeConfigSpec.DoubleValue HIDE_PLAYER_DISTANCE;
+
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
@@ -67,6 +78,65 @@ public class FixConfig {
                     "holds their last movement direction and does not auto-rotate during guard/parry."
                 )
                 .define("autoFaceTarget", true);
+
+        builder.pop();
+
+        builder.comment("Auto Lock-On Settings").push("autoLockOn");
+
+        FILTER_PLAYERS_FROM_AUTO_LOCKON = builder
+                .comment(
+                    "Exclude other players from automatic target switching.",
+                    "When true (default), auto lock-on will never pick a player as the next target.",
+                    "Useful in multiplayer to avoid accidentally locking onto allies."
+                )
+                .define("filterPlayersFromAutoLockOn", true);
+
+        FLICK_SENSITIVITY = builder
+                .comment(
+                    "Degrees of mouse/camera movement needed to trigger a directional target switch.",
+                    "Lower = more sensitive (easier to switch), Higher = harder to trigger.",
+                    "Only applies when auto lock-on is active."
+                )
+                .defineInRange("flickSensitivity", 15.0, 5.0, 45.0);
+
+        builder.pop();
+
+        builder.comment("Camera Offset (Over-the-Shoulder)").push("camera");
+
+        CAMERA_OFFSET_X = builder
+                .comment(
+                    "Horizontal camera offset in blocks. Negative = left shoulder, Positive = right shoulder.",
+                    "Set to 0 to disable the over-the-shoulder offset.",
+                    "Use the 'Swap Shoulder' keybind to flip this at runtime."
+                )
+                .defineInRange("cameraOffsetX", -0.75, -3.0, 3.0);
+
+        CAMERA_OFFSET_Y = builder
+                .comment(
+                    "Vertical camera offset in blocks. Positive = higher, Negative = lower."
+                )
+                .defineInRange("cameraOffsetY", 0.15, -2.0, 2.0);
+
+        CAMERA_OFFSET_SMOOTHING = builder
+                .comment(
+                    "How fast the camera offset transitions when swapping shoulders or changing offset.",
+                    "Lower = slower/smoother transition, 1.0 = instant."
+                )
+                .defineInRange("cameraOffsetSmoothing", 0.5, 0.05, 1.0);
+
+        HIDE_PLAYER_WHEN_CLOSE = builder
+                .comment(
+                    "Hide the player model when the camera is very close (e.g., backed against a wall).",
+                    "Prevents the camera from clipping inside the player model."
+                )
+                .define("hidePlayerWhenClose", true);
+
+        HIDE_PLAYER_DISTANCE = builder
+                .comment(
+                    "Distance threshold (in blocks) below which the player model is hidden.",
+                    "Only applies when hidePlayerWhenClose is true."
+                )
+                .defineInRange("hidePlayerDistance", 0.8, 0.1, 3.0);
 
         builder.pop();
 

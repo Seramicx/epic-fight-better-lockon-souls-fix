@@ -279,19 +279,16 @@ public class MovementFixHandler {
 
         if (isMoving) {
             // Moving: 360 directional movement with smooth turns
-            // Calculate movement direction offset from target:
-            //   W → 0°, S → 180°, A → -90°, D → +90°
-            //   Diagonals: W+A → -45°, S+D → +135°, etc.
             float offsetAngle = -(float) Math.toDegrees(Math.atan2(rawStrafe, rawForward));
             float desiredYRot = Mth.wrapDegrees(targetYaw + offsetAngle);
 
-            // Smooth from OUR tracked angle (not player.getYRot())
             smoothedYRot = smoothAngle(smoothedYRot, desiredYRot, turnSpeed);
-
-            // Apply to player
             player.setYRot(smoothedYRot);
 
-            // All movement becomes "forward" → full running speed in any direction
+            // Impulse trick: rotate yRot to face movement direction, then set all
+            // movement as "forward" at that angle. Booleans must be consistent with
+            // the impulse values — contradictory state (up=true + down=true) breaks
+            // EF's MovementDirection.vertical() and other systems.
             float speed = input.shiftKeyDown ? 0.3F : 1.0F;
             input.forwardImpulse = speed;
             input.leftImpulse = 0;
